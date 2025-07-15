@@ -1,11 +1,10 @@
 import React from 'react'
-import UserSignUp from './Components/UserSignup'
-
+import DriverSignUp from '../Components/DriverSignup'
 
 function page() {
   return (
     <div>
-      <UserSignUp/>
+        <DriverSignUp/>
     </div>
   )
 }
