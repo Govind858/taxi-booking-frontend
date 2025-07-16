@@ -1,28 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import dynamic from "next/dynamic";
+
+// Lazy load leaflet components to avoid SSR import issues
+const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then(mod => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ssr: false });
+
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
-// ✅ Import default marker icons using ?url for Next.js
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png?url";
-import markerIcon from "leaflet/dist/images/marker-icon.png?url";
-import markerShadow from "leaflet/dist/images/marker-shadow.png?url";
-
-// ✅ Patch the default Leaflet marker icon paths
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
+// ✅ Patch Leaflet marker icons (only run on client)
+if (typeof window !== "undefined" && L?.Icon?.Default) {
+  import("leaflet/dist/images/marker-icon.png?url").then(iconUrl => {
+    import("leaflet/dist/images/marker-icon-2x.png?url").then(retinaIcon => {
+      import("leaflet/dist/images/marker-shadow.png?url").then(shadowUrl => {
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: retinaIcon.default,
+          iconUrl: iconUrl.default,
+          shadowUrl: shadowUrl.default,
+        });
+      });
+    });
+  });
+}
 
 export default function LocationMap() {
   const [position, setPosition] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude, accuracy } = pos.coords;
