@@ -1,33 +1,44 @@
 'use client'
-import React, { useState } from 'react';
-import { Menu, X, MapPin, Navigation, Clock, User, LogOut, Star, Car, DollarSign, Settings } from 'lucide-react';
-import { useDriver } from '../useContext/DriverContext';
-import { useRouter } from "next/navigation"
 
-// DriverHeader Component
+import React, { useState, useEffect } from 'react'
+import {
+  Menu,
+  X,
+  MapPin,
+  Navigation,
+  Clock,
+  User,
+  LogOut,
+  Star,
+  Car,
+  DollarSign,
+  Settings,
+} from 'lucide-react'
+import { useDriver } from '../useContext/DriverContext'
+import { useRouter } from 'next/navigation'
+
 const DriverHeader = () => {
   const router = useRouter()
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isOnline, setIsOnline] = useState(false);
-  const [IsLoggingOut,setIsLoggingOut] = useState(false)
-  const { driver,setDriver } = useDriver()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isOnline, setIsOnline] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const { driver, setDriver } = useDriver()
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const toggleOnlineStatus = () => {
-    setIsOnline(!isOnline);
-  };
-
-  const logout = () => {
-    setIsLoggingOut(true)
-    localStorage.removeItem('driverId')
-    router.push('/DriverSignin')
+    setIsMenuOpen(!isMenuOpen)
   }
 
+  const toggleOnlineStatus = () => {
+    setIsOnline(!isOnline)
+  }
 
-  console.log(driver)
+  const logout = () => {
+    if (typeof window !== 'undefined') {
+      setIsLoggingOut(true)
+      localStorage.removeItem('driverId')
+      router.push('/DriverSignin')
+    }
+  }
 
   return (
     <header className="bg-white shadow-lg border-b border-gray-200 relative z-50">
@@ -49,14 +60,18 @@ const DriverHeader = () => {
           <div className="flex items-center space-x-4">
             {/* Online/Offline Toggle */}
             <div className="flex items-center space-x-3">
-              <span className={`text-sm font-medium ${isOnline ? 'text-green-600' : 'text-gray-500'}`}>
+              <span
+                className={`text-sm font-medium ${
+                  isOnline ? 'text-green-600' : 'text-gray-500'
+                }`}
+              >
                 {isOnline ? 'Online' : 'Offline'}
               </span>
               <button
                 onClick={toggleOnlineStatus}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  isOnline 
-                    ? 'bg-green-500 focus:ring-green-500' 
+                  isOnline
+                    ? 'bg-green-500 focus:ring-green-500'
                     : 'bg-gray-300 focus:ring-gray-400'
                 }`}
               >
@@ -81,18 +96,6 @@ const DriverHeader = () => {
             </button>
           </div>
         </div>
-
-        {/* Status Bar - Shows when online */}
-        {/* {isOnline && (
-          <div className="bg-green-50 border-t border-green-200 px-4 py-2">
-            <div className="flex items-center justify-end text-sm">
-              <div className="flex items-center space-x-4 text-gray-600">
-                <span>Today's Earnings: $0.00</span>
-                <span>Rides: 0</span>
-              </div>
-            </div>
-          </div>
-        )} */}
       </div>
 
       {/* Menu Dropdown */}
@@ -104,8 +107,8 @@ const DriverHeader = () => {
                 <Car className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="font-semibold text-gray-800">{driver.name}</p>
-                <p className="text-sm text-gray-500">{driver.email}</p>
+                <p className="font-semibold text-gray-800">{driver?.name || 'Driver'}</p>
+                <p className="text-sm text-gray-500">{driver?.email || 'email@example.com'}</p>
                 <div className="flex items-center space-x-1 mt-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-current" />
                   <span className="text-sm text-gray-600">4.8 Rating</span>
@@ -113,46 +116,67 @@ const DriverHeader = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="py-2">
-            <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+            <a
+              href="#"
+              className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
               <User className="w-5 h-5 text-gray-500 mr-3" />
               <span className="text-gray-700">Driver Profile</span>
             </a>
-            <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+            <a
+              href="#"
+              className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
               <Car className="w-5 h-5 text-gray-500 mr-3" />
               <span className="text-gray-700">Vehicle Info</span>
             </a>
-            <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+            <a
+              href="#"
+              className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
               <Clock className="w-5 h-5 text-gray-500 mr-3" />
               <span className="text-gray-700">Trip History</span>
             </a>
-            <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+            <a
+              href="#"
+              className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
               <DollarSign className="w-5 h-5 text-gray-500 mr-3" />
               <span className="text-gray-700">Earnings</span>
             </a>
-            <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+            <a
+              href="#"
+              className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
               <Star className="w-5 h-5 text-gray-500 mr-3" />
               <span className="text-gray-700">Ratings & Reviews</span>
             </a>
-            <a href="#" className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+            <a
+              href="#"
+              className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
               <Settings className="w-5 h-5 text-gray-500 mr-3" />
               <span className="text-gray-700">Settings</span>
             </a>
             <hr className="my-2 border-gray-100" />
-            <button onClick={logout} className="flex items-center w-full px-4 py-3 hover:bg-red-50 transition-colors text-red-600">
-              {IsLoggingOut ?(
-                <span className='mr-3 h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"'></span>
-              ):(
-              <LogOut className="w-5 h-5 mr-3" />
-            )}
+            <button
+              onClick={logout}
+              className="flex items-center w-full px-4 py-3 hover:bg-red-50 transition-colors text-red-600"
+            >
+              {isLoggingOut ? (
+                <span className="mr-3 h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></span>
+              ) : (
+                <LogOut className="w-5 h-5 mr-3" />
+              )}
               <span>Logout</span>
             </button>
           </div>
         </div>
       )}
     </header>
-  );
-};
+  )
+}
 
-export default DriverHeader;
+export default DriverHeader

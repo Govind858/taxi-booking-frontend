@@ -1,5 +1,7 @@
 import { User, Star, DollarSign } from "lucide-react";
 import DriverAxios from "../Axios/DriverAxios";
+
+
 export default function DriverConfirmationCard({ driverData, onAction }) {
   console.log("data in DriverConfirmationCard:", driverData);
   const { acceptedDriver, ridedetails } = driverData;

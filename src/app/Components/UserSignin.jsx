@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navigation, User, Phone, Mail, Lock, Car, Palette, Hash, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import UserAxios from '../Axios/UserAxios';
-import { resolve } from 'styled-jsx/css';
 
 const UserSignin = ({ onSwitchToSignUp, onSwitchToDriver, onBack }) => {
   const router = useRouter();
