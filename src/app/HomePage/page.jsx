@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
-import { Loader2 } from "lucide-react"
+import { Loader2, Navigation, Menu, User } from "lucide-react"
 
 // Loading skeleton components
 const HeaderSkeleton = () => (
@@ -9,10 +9,16 @@ const HeaderSkeleton = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center h-16">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
-          <div className="w-24 h-6 bg-gray-300 rounded"></div>
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <Navigation className="w-6 h-6 text-white" />
+          </div>
+          <div className="w-24 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded">
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              RideFlow
+            </span>
+          </div>
         </div>
-        <div className="w-8 h-8 bg-gray-300 rounded"></div>
+        <Menu className="w-6 h-6 text-gray-600" />
       </div>
     </div>
   </div>
@@ -94,9 +100,10 @@ export default function HomePage() {
     setMounted(true)
   }, [])
 
+  // Always render the skeleton components during SSR and hydration
   if (!mounted) {
     return (
-      <div>
+      <div className="flex flex-col min-h-screen">
         <HeaderSkeleton />
         <MainContentSkeleton />
         <FooterSkeleton />
