@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -9,10 +10,12 @@ import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import { MapPin, Loader2 } from 'lucide-react';
 import DriverAxios from "../Axios/DriverAxios";
 import DriverConfirmationCard from "./DriverConfirmationCard";
+import dynamic from 'next/dynamic';
 
 const position = [9.5916, 76.5222]; // Static user location
 
-
+// Dynamically import RoutingMachine with SSR disabled
+const RoutingMachine = dynamic(() => import('./RoutingMachine'), { ssr: false });
 
 const MainContent = () => {
   const [pickupLocation, setPickupLocation] = useState('');
@@ -24,17 +27,17 @@ const MainContent = () => {
   const [driverCoords, setDriverCoords] = useState(null);
 
   const taxiIcon = new L.Icon({
-    iconUrl:'/taxi-icon.png',
-    iconSize:[50,50],
-    iconAnchor:[20,20]
+    iconUrl: '/taxi-icon.png',
+    iconSize: [50, 50],
+    iconAnchor: [20, 20]
   });
 
- useEffect(() => {
+  useEffect(() => {
     if (showRoute && driverCoords) {
       setError("Driver is on the way");
     }
   }, [showRoute, driverCoords]);
-  
+
   const handleSeePrices = async () => {
     setError('');
 
@@ -165,8 +168,8 @@ const MainContent = () => {
 
                 {showRoute && driverCoords && (
                   <>
-                     <RoutingMachine from={driverCoords} to={position} />
-                      <Marker position={driverCoords} icon={taxiIcon}/>
+                    <RoutingMachine from={driverCoords} to={position} />
+                    <Marker position={driverCoords} icon={taxiIcon} />
                   </>
                 )}
               </MapContainer>
@@ -200,38 +203,3 @@ const MainContent = () => {
 };
 
 export default MainContent;
-
-// RoutingMachine Component (inside same file)
-const RoutingMachine = ({ from, to }) => {
-  const map = useMap();
-
-  useEffect(() => {
-  
-    if (!from || !to) return;
-
-    const routingControl = L.Routing.control({
-      waypoints: [L.latLng(from[0], from[1]), L.latLng(to[0], to[1])],
-      routeWhileDragging: false,
-      addWaypoints: false,
-      draggableWaypoints: false,
-      show: false,
-      createMarker: () => null,
-      lineOptions: {
-        styles: [{ color: 'blue', weight: 5 }]
-      }
-    }).addTo(map);
-
-    // 🔥 Hide the floating instruction container
-    const container = document.querySelector('.leaflet-routing-container');
-    if (container) {
-      container.style.display = 'none';
-    }
-
-    return () => {
-      map.removeControl(routingControl);
-    };
-  }, [from, to, map]);
-
-  return null;
-};
-
