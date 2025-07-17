@@ -22,7 +22,13 @@ const DriverHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isOnline, setIsOnline] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const { driver, setDriver } = useDriver()
+
+  // Ensure we're on the client side before accessing localStorage
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -33,7 +39,7 @@ const DriverHeader = () => {
   }
 
   const logout = () => {
-    if (typeof window !== 'undefined') {
+    if (isClient) {
       setIsLoggingOut(true)
       localStorage.removeItem('driverId')
       router.push('/DriverSignin')

@@ -5,14 +5,18 @@ import { Navigation, DollarSign } from "lucide-react"
 
 const RideRequestCard = ({ rideData, onAccept, onReject, socket }) => {
   const [isVisible, setIsVisible] = useState(true)
+  const [isClient, setIsClient] = useState(false)
+  const [driverId, setDriverId] = useState(null)
   const hasResponded = useRef(false)
 
-  // Avoid localStorage outside handlers or effects
-  const [driverId, setDriverId] = useState(null)
-
   useEffect(() => {
-    const id = typeof window !== "undefined" ? localStorage.getItem("driverId") : null
-    setDriverId(id)
+    setIsClient(true)
+    
+    // Only access localStorage after client-side mounting
+    if (typeof window !== "undefined") {
+      const id = localStorage.getItem("driverId")
+      setDriverId(id)
+    }
 
     return () => {
       hasResponded.current = false
@@ -20,7 +24,7 @@ const RideRequestCard = ({ rideData, onAccept, onReject, socket }) => {
   }, [])
 
   const handleAccept = () => {
-    if (hasResponded.current) return
+    if (hasResponded.current || !isClient) return
     hasResponded.current = true
 
     if (!driverId) {
@@ -48,7 +52,7 @@ const RideRequestCard = ({ rideData, onAccept, onReject, socket }) => {
   }
 
   const handleReject = () => {
-    if (hasResponded.current) return
+    if (hasResponded.current || !isClient) return
     hasResponded.current = true
 
     if (!driverId) {
@@ -75,7 +79,8 @@ const RideRequestCard = ({ rideData, onAccept, onReject, socket }) => {
     onReject?.(rideData)
   }
 
-  if (!isVisible || !rideData) return null
+  // Don't render until client-side hydration is complete
+  if (!isClient || !isVisible || !rideData) return null
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none">

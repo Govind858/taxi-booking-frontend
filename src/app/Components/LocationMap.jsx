@@ -13,10 +13,16 @@ const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ss
 export default function LocationMap() {
   const [position, setPosition] = useState(null);
   const [error, setError] = useState("");
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Set client-side flag
+    setIsClient(true);
+
     // Patch Leaflet marker icons only on client
     const patchLeafletIcons = async () => {
+      if (typeof window === "undefined") return;
+
       const L = await import("leaflet");
 
       const iconUrl = await import("leaflet/dist/images/marker-icon.png?url");
@@ -33,8 +39,8 @@ export default function LocationMap() {
 
     patchLeafletIcons();
 
-    // Geolocation
-    if ("geolocation" in navigator) {
+    // Geolocation - only on client side
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude, accuracy } = pos.coords;
@@ -49,17 +55,36 @@ export default function LocationMap() {
           maximumAge: 0,
         }
       );
-    } else {
+    } else if (typeof window !== "undefined") {
       setError("Geolocation is not supported in this browser.");
     }
   }, []);
+
+  // Don't render anything until client-side hydration
+  if (!isClient) {
+    return (
+      <div className="h-150 w-full border rounded-lg overflow-hidden flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading map...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return <p className="text-red-600 p-4">Error: {error}</p>;
   }
 
   if (!position) {
-    return <p className="p-4">Loading your current location…</p>;
+    return (
+      <div className="h-150 w-full border rounded-lg overflow-hidden flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading your current location…</p>
+        </div>
+      </div>
+    );
   }
 
   return (

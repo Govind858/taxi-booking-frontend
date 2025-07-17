@@ -14,17 +14,21 @@ function Page() {
   const [hasRideRequest, setHasRideRequest] = useState(false);
   const [rideRequestData, setRideRequestData] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [isClient, setIsClient] = useState(false);
 
   console.log("👤 Driver context:", driver);
 
   useEffect(() => {
+    // Set client-side flag
+    setIsClient(true);
+
     const socketConnection = io("http://localhost:5000");
     setSocket(socketConnection);
 
     socketConnection.on("connect", () => {
       console.log("✅ Connected to server with socket id:", socketConnection.id);
 
-      // Check if running in browser before accessing localStorage
+      // Only access localStorage after confirming we're on the client
       if (typeof window !== "undefined") {
         const driverId = localStorage.getItem("driverId");
 
@@ -73,6 +77,22 @@ function Page() {
     setRideRequestData(null);
     // Add rejection logic if needed
   };
+
+  // Don't render interactive components until client-side hydration
+  if (!isClient) {
+    return (
+      <div>
+        <DriverHeader />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div>
