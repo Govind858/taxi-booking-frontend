@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import { Loader2 } from "lucide-react"
 
-// Create loading components
+// Loading skeleton components
 const HeaderSkeleton = () => (
   <div className="h-16 bg-white shadow-lg border-b border-gray-200 animate-pulse">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,7 +71,7 @@ const FooterSkeleton = () => (
   </div>
 )
 
-// Dynamically import all components with SSR disabled
+// Dynamically import components with SSR disabled
 const Header = dynamic(() => import("../Components/Header"), {
   ssr: false,
   loading: () => <HeaderSkeleton />,
@@ -87,15 +87,14 @@ const Footer = dynamic(() => import("../Components/Footer"), {
   loading: () => <FooterSkeleton />,
 })
 
-function HomePage() {
-  const [isClient, setIsClient] = useState(false)
+export default function HomePage() {
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setIsClient(true)
+    setMounted(true)
   }, [])
 
-  // Show loading state until client-side hydration is complete
-  if (!isClient) {
+  if (!mounted) {
     return (
       <div>
         <HeaderSkeleton />
@@ -106,12 +105,10 @@ function HomePage() {
   }
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Header />
       <MainContent />
       <Footer />
     </div>
   )
 }
-
-export default HomePage

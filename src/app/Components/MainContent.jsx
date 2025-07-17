@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { MapPin, Loader2 } from "lucide-react"
 import DriverAxios from "../Axios/DriverAxios"
 import DriverConfirmationCard from "./DriverConfirmationCard"
@@ -7,7 +7,6 @@ import dynamic from "next/dynamic"
 
 const position = [9.5916, 76.5222] // Static user location
 
-// Dynamically import ALL map-related components with SSR disabled
 const MapComponent = dynamic(() => import("./MapComponent"), {
   ssr: false,
   loading: () => (
@@ -20,7 +19,7 @@ const MapComponent = dynamic(() => import("./MapComponent"), {
   ),
 })
 
-const MainContent = () => {
+export default function MainContent() {
   const [pickupLocation, setPickupLocation] = useState("")
   const [dropLocation, setDropLocation] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -28,18 +27,6 @@ const MainContent = () => {
   const [DriverData, setDriverData] = useState(null)
   const [showRoute, setShowRoute] = useState(false)
   const [driverCoords, setDriverCoords] = useState(null)
-  const [isClient, setIsClient] = useState(false)
-
-  // Ensure we're on the client side
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  useEffect(() => {
-    if (showRoute && driverCoords) {
-      setError("Driver is on the way")
-    }
-  }, [showRoute, driverCoords])
 
   const handleSeePrices = async () => {
     setError("")
@@ -51,19 +38,13 @@ const MainContent = () => {
 
     setIsLoading(true)
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-
       const response = await DriverAxios.get(`/nearby`, {
         params: {
           start: pickupLocation.trim(),
           end: dropLocation.trim(),
         },
-        signal: controller.signal,
-        timeout: 10000,
+        timeout: 10000
       })
-
-      clearTimeout(timeoutId)
 
       if (response.data) {
         const { acceptedDriver, ridedetails } = response.data.availableDrivers
@@ -87,7 +68,6 @@ const MainContent = () => {
       <main className="flex-1 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-            {/* Booking Form */}
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">Book Your Ride</h2>
               <p className="text-gray-600 mb-8">Where would you like to go today?</p>
@@ -144,24 +124,13 @@ const MainContent = () => {
               </div>
             </div>
 
-            {/* Map Section */}
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-[500px] z-0">
-              {isClient ? (
-                <MapComponent position={position} showRoute={showRoute} driverCoords={driverCoords} />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  <div className="text-center">
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-600" />
-                    <p className="text-gray-600">Loading map...</p>
-                  </div>
-                </div>
-              )}
+              <MapComponent position={position} showRoute={showRoute} driverCoords={driverCoords} />
             </div>
           </div>
         </div>
       </main>
 
-      {/* Confirmation Overlay */}
       {DriverData?.acceptedDriver && (
         <DriverConfirmationCard
           driverData={DriverData}
@@ -181,5 +150,3 @@ const MainContent = () => {
     </>
   )
 }
-
-export default MainContent
