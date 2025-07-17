@@ -1,89 +1,86 @@
-'use client';
+"use client"
+import { useEffect, useState } from "react"
+import { MapPin, Loader2 } from "lucide-react"
+import DriverAxios from "../Axios/DriverAxios"
+import DriverConfirmationCard from "./DriverConfirmationCard"
+import dynamic from "next/dynamic"
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import 'leaflet-routing-machine';
-import 'leaflet-defaulticon-compatibility';
-import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
-import { MapPin, Loader2 } from 'lucide-react';
-import DriverAxios from "../Axios/DriverAxios";
-import DriverConfirmationCard from "./DriverConfirmationCard";
-import dynamic from 'next/dynamic';
+const position = [9.5916, 76.5222] // Static user location
 
-const position = [9.5916, 76.5222]; // Static user location
-
-// Dynamically import RoutingMachine with SSR disabled
-const RoutingMachine = dynamic(() => import('./RoutingMachine'), { ssr: false });
+// Dynamically import ALL map-related components with SSR disabled
+const MapComponent = dynamic(() => import("./MapComponent"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-600" />
+        <p className="text-gray-600">Loading map...</p>
+      </div>
+    </div>
+  ),
+})
 
 const MainContent = () => {
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [dropLocation, setDropLocation] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [DriverData, setDriverData] = useState(null);
-  const [showRoute, setShowRoute] = useState(false);
-  const [driverCoords, setDriverCoords] = useState(null);
+  const [pickupLocation, setPickupLocation] = useState("")
+  const [dropLocation, setDropLocation] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [DriverData, setDriverData] = useState(null)
+  const [showRoute, setShowRoute] = useState(false)
+  const [driverCoords, setDriverCoords] = useState(null)
+  const [isClient, setIsClient] = useState(false)
 
-  const taxiIcon = new L.Icon({
-    iconUrl: '/taxi-icon.png',
-    iconSize: [50, 50],
-    iconAnchor: [20, 20]
-  });
+  // Ensure we're on the client side
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
     if (showRoute && driverCoords) {
-      setError("Driver is on the way");
+      setError("Driver is on the way")
     }
-  }, [showRoute, driverCoords]);
+  }, [showRoute, driverCoords])
 
   const handleSeePrices = async () => {
-    setError('');
-
+    setError("")
     if (!pickupLocation?.trim() || !dropLocation?.trim()) {
-      setError('Please enter both pickup and drop locations');
-      return;
+      setError("Please enter both pickup and drop locations")
+      return
     }
+    if (isLoading) return
 
-    if (isLoading) return;
-
-    setIsLoading(true);
-
+    setIsLoading(true)
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
       const response = await DriverAxios.get(`/nearby`, {
         params: {
           start: pickupLocation.trim(),
-          end: dropLocation.trim()
+          end: dropLocation.trim(),
         },
         signal: controller.signal,
-        timeout: 10000
-      });
+        timeout: 10000,
+      })
 
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId)
 
       if (response.data) {
-        const { acceptedDriver, ridedetails } = response.data.availableDrivers;
-
-        setDriverData({ acceptedDriver, ridedetails });
-
+        const { acceptedDriver, ridedetails } = response.data.availableDrivers
+        setDriverData({ acceptedDriver, ridedetails })
         if (!acceptedDriver) {
-          setError('No drivers found in your area. Please try again later.');
+          setError("No drivers found in your area. Please try again later.")
         }
       } else {
-        setError('No data received from server. Please try again.');
+        setError("No data received from server. Please try again.")
       }
-
     } catch (error) {
-      console.error('Error fetching nearby drivers:', error);
-      setError('Something went wrong. Please try again.');
+      console.error("Error fetching nearby drivers:", error)
+      setError("Something went wrong. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -97,9 +94,7 @@ const MainContent = () => {
 
               <div className="space-y-6">
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-                    {error}
-                  </div>
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">{error}</div>
                 )}
 
                 <div className="relative">
@@ -143,7 +138,7 @@ const MainContent = () => {
                       Searching Drivers...
                     </>
                   ) : (
-                    'See Prices & Book Ride'
+                    "See Prices & Book Ride"
                   )}
                 </button>
               </div>
@@ -151,28 +146,16 @@ const MainContent = () => {
 
             {/* Map Section */}
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-[500px] z-0">
-              <MapContainer
-                center={position}
-                zoom={13}
-                className="w-full h-full"
-                scrollWheelZoom={true}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-
-                <Marker position={position}>
-                  <Popup>You are here – Kottayam</Popup>
-                </Marker>
-
-                {showRoute && driverCoords && (
-                  <>
-                    <RoutingMachine from={driverCoords} to={position} />
-                    <Marker position={driverCoords} icon={taxiIcon} />
-                  </>
-                )}
-              </MapContainer>
+              {isClient ? (
+                <MapComponent position={position} showRoute={showRoute} driverCoords={driverCoords} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-600" />
+                    <p className="text-gray-600">Loading map...</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -184,22 +167,19 @@ const MainContent = () => {
           driverData={DriverData}
           onAction={(action) => {
             if (action === "cancel") {
-              setDriverData(null);
-              setShowRoute(false);
+              setDriverData(null)
+              setShowRoute(false)
             } else if (action === "confirm") {
-              console.log("Ride confirmed!");
-              setDriverCoords([
-                DriverData.acceptedDriver.latitude,
-                DriverData.acceptedDriver.longitude,
-              ]);
-              setShowRoute(true);
-              setDriverData(null);
+              console.log("Ride confirmed!")
+              setDriverCoords([DriverData.acceptedDriver.latitude, DriverData.acceptedDriver.longitude])
+              setShowRoute(true)
+              setDriverData(null)
             }
           }}
         />
       )}
     </>
-  );
-};
+  )
+}
 
-export default MainContent;
+export default MainContent
