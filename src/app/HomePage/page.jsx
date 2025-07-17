@@ -1,16 +1,117 @@
-import React from 'react'
-import Header  from '../Components/Header'
-import MainContent from '../Components/MainContent'
-import Footer from '../Components/Footer'
+"use client"
+import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
+import { Loader2 } from "lucide-react"
 
-function page() {
+// Create loading components
+const HeaderSkeleton = () => (
+  <div className="h-16 bg-white shadow-lg border-b border-gray-200 animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-between items-center h-16">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
+          <div className="w-24 h-6 bg-gray-300 rounded"></div>
+        </div>
+        <div className="w-8 h-8 bg-gray-300 rounded"></div>
+      </div>
+    </div>
+  </div>
+)
+
+const MainContentSkeleton = () => (
+  <div className="flex-1 bg-gray-50 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 animate-pulse">
+          <div className="h-8 bg-gray-300 rounded mb-4"></div>
+          <div className="h-4 bg-gray-300 rounded mb-8"></div>
+          <div className="space-y-6">
+            <div className="h-20 bg-gray-300 rounded-xl"></div>
+            <div className="h-20 bg-gray-300 rounded-xl"></div>
+            <div className="h-12 bg-gray-300 rounded-xl"></div>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-xl h-[500px] animate-pulse">
+          <div className="w-full h-full bg-gray-300 rounded-2xl flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+const FooterSkeleton = () => (
+  <div className="bg-gray-900 h-64 animate-pulse">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="col-span-2">
+          <div className="h-6 bg-gray-700 rounded mb-4 w-32"></div>
+          <div className="h-4 bg-gray-700 rounded mb-2 w-full"></div>
+          <div className="h-4 bg-gray-700 rounded mb-6 w-3/4"></div>
+        </div>
+        <div>
+          <div className="h-6 bg-gray-700 rounded mb-4 w-24"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-700 rounded w-20"></div>
+            <div className="h-4 bg-gray-700 rounded w-24"></div>
+            <div className="h-4 bg-gray-700 rounded w-16"></div>
+          </div>
+        </div>
+        <div>
+          <div className="h-6 bg-gray-700 rounded mb-4 w-20"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-700 rounded w-24"></div>
+            <div className="h-4 bg-gray-700 rounded w-28"></div>
+            <div className="h-4 bg-gray-700 rounded w-20"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+// Dynamically import all components with SSR disabled
+const Header = dynamic(() => import("../Components/Header"), {
+  ssr: false,
+  loading: () => <HeaderSkeleton />,
+})
+
+const MainContent = dynamic(() => import("../Components/MainContent"), {
+  ssr: false,
+  loading: () => <MainContentSkeleton />,
+})
+
+const Footer = dynamic(() => import("../Components/Footer"), {
+  ssr: false,
+  loading: () => <FooterSkeleton />,
+})
+
+function HomePage() {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Show loading state until client-side hydration is complete
+  if (!isClient) {
+    return (
+      <div>
+        <HeaderSkeleton />
+        <MainContentSkeleton />
+        <FooterSkeleton />
+      </div>
+    )
+  }
+
   return (
     <div>
-      <Header/>
-      <MainContent/>
-      <Footer/>
+      <Header />
+      <MainContent />
+      <Footer />
     </div>
   )
 }
 
-export default page
+export default HomePage
